@@ -9,7 +9,6 @@ Run start.py
 - Ability to play mancala human vs human
 
 ### Feature Roadmap
-- Fix error case pertaining to end-of-game wrapup (when one side has no stones)
 - Improved ASCII art
 - Basic computer opponent (random move selection)
 - Framework for Reinforcement Learning
