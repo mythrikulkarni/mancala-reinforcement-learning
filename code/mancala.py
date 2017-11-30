@@ -8,7 +8,15 @@ This is a temporary script file.
 class Mancala:
     
     def __init__(self):
-        self.pockets = [0]*14 # 12 pockes and 2 mancalas, take bottom left pocket as index 0 and rotate CCW
+        self.pockets = self.initialize_board()
+    
+    def initialize_board(self):
+        
+        pockets = [4]*14
+        pockets[6] = 0
+        pockets[13] = 0
+        
+        return pockets
     
     def draw_board(self):
         
