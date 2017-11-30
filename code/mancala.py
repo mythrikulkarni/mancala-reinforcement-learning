@@ -9,6 +9,39 @@ class Mancala:
     
     def __init__(self):
         self.pockets = self.initialize_board()
+        self.play_game()
+        
+    def play_game(self):
+        
+        # Reset board
+        self.initialize_board()
+        
+        # Assume both players are humans for now
+        player_1 = 'human'
+        player_2 = 'human'
+        
+        player_turn = 1
+        
+        while not(self.check_game_over()):
+            
+            # Ask for move from corresponding player
+            if player_turn == 1:
+                if player_1 == 'human':
+                    move = input("Choose Pocket 1-6: ")
+                    move = convert_move(move, player=1)
+                if player_2 == 'human':
+                    move = input("Choose Pocket 1-6 on Other Side")
+                    move = convert_move(move, player=2)
+            
+    def convert_move(self, move, player):
+        """ Converts the standard 1-6 input of the player into the corresponding
+        pocket for each player as needed
+        """
+        if player == 1:
+            return move-1 # Shift left once to get the pocket position
+        if player == 2:
+            return move+6 # Shift right 6 spaces to refer to upper board spot
+        return False # Error case handling
     
     def valid_move(self, pocket_position, player):
         
@@ -33,6 +66,28 @@ class Mancala:
         pockets[13] = 0
         
         return pockets
+    
+    def check_game_over(self):
+        """ Checks if all pockets are empty of stones. If so assigns all
+            remaining stones to the appropriate mancala.
+        """
+        empty_player_1 = sum(self.pockets[:6]) == 0
+        empty_player_2 = sum(self.pockets[7:13]) == 0
+        
+        # Check for empty player 1
+        if empty_player_1:
+            # Put remaining stones in player 2's mancala
+            self.pockets[13] = sum(self.pockets[7:13])
+            self.pockets[7:13] = [0]*6
+            return True
+        
+        if empty_player_2:
+            # Put remaining stones in player 2's mancala
+            self.pockets[6] = sum(self.pockets[:6])
+            self.pockets[:6] = [0]*6
+            return True
+        
+        return False
     
     def determine_winner(self):
         
