@@ -18,6 +18,14 @@ class Mancala:
         
         return pockets
     
+    def determine_winner(self):
+        
+        if self.pockets[13]>self.pockets[6]:
+            return "Player 2"
+        elif self.pockets[13]<self.pockets[6]:
+            return "Player 1"
+        return "Draw"
+    
     def draw_board(self):
         
         # Unpack list of stones in each spot for readability
