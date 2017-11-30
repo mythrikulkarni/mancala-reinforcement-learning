@@ -32,6 +32,25 @@ class Mancala:
             return 2
         return 1
     
+    def capture(self, pocket_position, mancala_pocket):
+        """ Captures all stones in the pocket and pocket opposite, goes into
+        The proper mancala pocket specified as input
+        """
+        
+        opposite_pocket_dict = {0: 12, 1:11, 2:10, 3:9, 4:8, 5:7,
+                                7:5, 8:4, 9:3, 10:2, 11:1, 12:0}
+        
+        # Take the stone from the pocket itself
+        self.pockets[mancala_pocket] += self.pockets[pocket_position]
+        self.pockets[pocket_position] = 0
+        
+        # Take the stones from the opposite pocket
+        opposite_pocket = opposite_pocket_dict[pocket_position]
+        self.pockets[mancala_pocket] += self.pockets[opposite_pocket]
+        self.pockets[opposite_pocket] = 0
+        
+        return True
+    
     def simulate_move(self, pocket_position, player):
         
         # Condense to local version of pockets
@@ -61,6 +80,21 @@ class Mancala:
             # Stone drop
             pockets[pocket_position] += 1
             stones_drawn -= 1
+        
+        # Determine if capture occurs
+        end_on_player_1_side = (0 <= pocket_position <= 5)
+        end_on_player_2_side = (7 <= pocket_position <= 12)
+        
+        # Only capture if stone is empty (has 1 stone after placement)
+        stone_was_empty = pockets[pocket_position] == 1
+        
+        # Player 1 capture
+        if player_1 and end_on_player_1_side and stone_was_empty:
+            self.capture(pocket_position, 6)
+            
+        # Player 2 capture
+        if player_2 and end_on_player_2_side and stone_was_empty:
+            self.capture(pocket_position, 13)
         
         # Determine next player
         if mancala_1_position and player_1:

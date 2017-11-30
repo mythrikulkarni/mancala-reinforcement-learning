@@ -12,6 +12,8 @@ from mancala import Mancala
 def main():
     environment = Mancala()
     environment.draw_board()
+    environment.simulate_move(4,1); environment.draw_board()
+    environment.simulate_move(0,1); environment.draw_board()
     return 0
 
 
