@@ -10,5 +10,4 @@ Run start.py
 
 ### Feature Roadmap
 - Improved ASCII art
-- Basic computer opponent (random move selection)
 - Framework for Reinforcement Learning
