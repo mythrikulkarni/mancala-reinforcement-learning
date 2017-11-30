@@ -10,6 +10,22 @@ class Mancala:
     def __init__(self):
         self.pockets = self.initialize_board()
     
+    def valid_move(self, pocket_position, player):
+        
+        # Move is invalid if player chooses anything other than own pockets
+        player_1_side = (0 <= pocket_position <= 5)
+        player_2_side = (7 <= pocket_position <= 12)
+        
+        # Must have stones in the pocket to be valid
+        if self.pockets[pocket_position] > 0:
+            if player_1_side and player==1:
+                return True
+            if player_2_side and player==2:
+                return True
+            
+        # All other moves are false
+        return False
+    
     def initialize_board(self):
         
         pockets = [4]*14
