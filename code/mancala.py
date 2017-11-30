@@ -26,6 +26,44 @@ class Mancala:
             return "Player 1"
         return "Draw"
     
+    def simulate_move(self, pocket_position, player):
+        
+        # Condense to local version of pockets
+        pockets = self.pockets
+        
+        stones_drawn = pockets[pocket_position]
+        pockets[pocket_position] = 0
+        
+        # Inefficient loop, clean up in future
+        while stones_drawn > 0:
+            pocket_position += 1
+            
+            # Case to handle looping back to start of board
+            if pocket_position > len(pockets)-1:
+                pocket_position = 0
+                
+            # Consider special cases (mancala pocket) before normal stone drops
+            mancala_1_position = pocket_position==6
+            mancala_2_position = pocket_position==13
+            player_1 = player == 1
+            player_2 = player == 2
+            if mancala_1_position and player_2:
+                continue # Skip stone drop and proceeding logic
+            if mancala_2_position and player_1:
+                continue # Skip stone drop and proceeding logic
+                
+            # Stone drop
+            pockets[pocket_position] += 1
+            stones_drawn -= 1
+        
+        # For normal stone drop conditions switch player
+        if player == 1:
+            next_player = 2
+        else:
+            next_player = 1
+        
+        return next_player
+    
     def draw_board(self):
         
         # Unpack list of stones in each spot for readability
