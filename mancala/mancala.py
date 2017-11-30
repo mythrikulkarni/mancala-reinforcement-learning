@@ -9,7 +9,6 @@ class Mancala:
     
     def __init__(self):
         self.pockets = self.initialize_board()
-        self.play_game()
         
     def play_game(self):
         
