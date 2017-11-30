@@ -26,6 +26,12 @@ class Mancala:
             return "Player 1"
         return "Draw"
     
+    def switch_player(self, player):
+        
+        if player == 1:
+            return 2
+        return 1
+    
     def simulate_move(self, pocket_position, player):
         
         # Condense to local version of pockets
@@ -56,11 +62,13 @@ class Mancala:
             pockets[pocket_position] += 1
             stones_drawn -= 1
         
-        # For normal stone drop conditions switch player
-        if player == 1:
-            next_player = 2
+        # Determine next player
+        if mancala_1_position and player_1:
+            next_player = player # Player 1 Mancala gets another turn
+        elif mancala_2_position and player_2:
+            next_player = player # Player 2 Mancala gets another turn
         else:
-            next_player = 1
+            next_player = self.switch_player(player) # All else switch player
         
         return next_player
     
