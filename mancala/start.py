@@ -5,7 +5,7 @@ Created on Thu Nov 30 10:40:03 2017
 @author: blamp
 """
 
-from mancala import Mancala
+from mancala.mancala import Mancala
 
 # Script used for debugging and go-to place to interact with game
 
