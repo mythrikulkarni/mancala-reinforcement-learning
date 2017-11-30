@@ -51,6 +51,28 @@ class Mancala:
         
         return True
     
+    def check_game_over(self):
+        """ Checks if all pockets are empty of stones. If so assigns all
+            remaining stones to the appropriate mancala.
+        """
+        empty_player_1 = sum(self.pockets[:6]) == 0
+        empty_player_2 = sum(self.pockets[7:13]) == 0
+        
+        # Check for empty player 1
+        if empty_player_1:
+            # Put remaining stones in player 2's mancala
+            self.pockets[13] = sum(self.pockets[7:13])
+            self.pockets[7:13] = [0]*6
+            return True
+        
+        if empty_player_2:
+            # Put remaining stones in player 2's mancala
+            self.pockets[6] = sum(self.pockets[:6])
+            self.pockets[:6] = [0]*6
+            return True
+        
+        return False
+    
     def simulate_move(self, pocket_position, player):
         
         # Condense to local version of pockets
