@@ -8,7 +8,103 @@ This is a temporary script file.
 class Mancala:
     
     def __init__(self):
-        self.pockets = [0]*14 # 12 pockes and 2 mancalas, take bottom left pocket as index 0 and rotate CCW
+        self.pockets = self.initialize_board()
+    
+    def initialize_board(self):
+        
+        pockets = [4]*14
+        pockets[6] = 0
+        pockets[13] = 0
+        
+        return pockets
+    
+    def determine_winner(self):
+        
+        if self.pockets[13]>self.pockets[6]:
+            return "Player 2"
+        elif self.pockets[13]<self.pockets[6]:
+            return "Player 1"
+        return "Draw"
+    
+    def switch_player(self, player):
+        
+        if player == 1:
+            return 2
+        return 1
+    
+    def capture(self, pocket_position, mancala_pocket):
+        """ Captures all stones in the pocket and pocket opposite, goes into
+        The proper mancala pocket specified as input
+        """
+        
+        opposite_pocket_dict = {0: 12, 1:11, 2:10, 3:9, 4:8, 5:7,
+                                7:5, 8:4, 9:3, 10:2, 11:1, 12:0}
+        
+        # Take the stone from the pocket itself
+        self.pockets[mancala_pocket] += self.pockets[pocket_position]
+        self.pockets[pocket_position] = 0
+        
+        # Take the stones from the opposite pocket
+        opposite_pocket = opposite_pocket_dict[pocket_position]
+        self.pockets[mancala_pocket] += self.pockets[opposite_pocket]
+        self.pockets[opposite_pocket] = 0
+        
+        return True
+    
+    def simulate_move(self, pocket_position, player):
+        
+        # Condense to local version of pockets
+        pockets = self.pockets
+        
+        stones_drawn = pockets[pocket_position]
+        pockets[pocket_position] = 0
+        
+        # Inefficient loop, clean up in future
+        while stones_drawn > 0:
+            pocket_position += 1
+            
+            # Case to handle looping back to start of board
+            if pocket_position > len(pockets)-1:
+                pocket_position = 0
+                
+            # Consider special cases (mancala pocket) before normal stone drops
+            mancala_1_position = pocket_position==6
+            mancala_2_position = pocket_position==13
+            player_1 = player == 1
+            player_2 = player == 2
+            if mancala_1_position and player_2:
+                continue # Skip stone drop and proceeding logic
+            if mancala_2_position and player_1:
+                continue # Skip stone drop and proceeding logic
+                
+            # Stone drop
+            pockets[pocket_position] += 1
+            stones_drawn -= 1
+        
+        # Determine if capture occurs
+        end_on_player_1_side = (0 <= pocket_position <= 5)
+        end_on_player_2_side = (7 <= pocket_position <= 12)
+        
+        # Only capture if stone is empty (has 1 stone after placement)
+        stone_was_empty = pockets[pocket_position] == 1
+        
+        # Player 1 capture
+        if player_1 and end_on_player_1_side and stone_was_empty:
+            self.capture(pocket_position, 6)
+            
+        # Player 2 capture
+        if player_2 and end_on_player_2_side and stone_was_empty:
+            self.capture(pocket_position, 13)
+        
+        # Determine next player
+        if mancala_1_position and player_1:
+            next_player = player # Player 1 Mancala gets another turn
+        elif mancala_2_position and player_2:
+            next_player = player # Player 2 Mancala gets another turn
+        else:
+            next_player = self.switch_player(player) # All else switch player
+        
+        return next_player
     
     def draw_board(self):
         
