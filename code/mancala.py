@@ -24,14 +24,30 @@ class Mancala:
         
         while not(self.check_game_over()):
             
+            # Start by drawing the board
+            self.draw_board()
+            
             # Ask for move from corresponding player
             if player_turn == 1:
                 if player_1 == 'human':
-                    move = input("Choose Pocket 1-6: ")
-                    move = convert_move(move, player=1)
+                    move = int(input("Player 1 - Choose Pocket 1-6: "))
+                    move = self.convert_move(move, player=1)
+            else:
                 if player_2 == 'human':
-                    move = input("Choose Pocket 1-6 on Other Side")
-                    move = convert_move(move, player=2)
+                    move = int(input("Player 2 - Choose Pocket 1-6: "))
+                    move = self.convert_move(move, player=2)
+                    
+            # Check if move is valid prior to performing
+            if not(self.valid_move(move, player_turn)):
+                print("INVALID MOVE")
+                continue
+            
+            # Perform assumed valid move and determine next to move
+            player_turn = self.simulate_move(move, player_turn)
+            
+        # Announce winner
+        winner = self.determine_winner()
+        print("Winner: ", winner, "!!!")
             
     def convert_move(self, move, player):
         """ Converts the standard 1-6 input of the player into the corresponding
