@@ -5,6 +5,8 @@ Spyder Editor
 This is a temporary script file.
 """
 
+import random
+
 class Mancala:
     
     def __init__(self):
@@ -18,6 +20,10 @@ class Mancala:
         # Assume both players are humans for now
         player_1 = 'human'
         player_2 = 'human'
+        
+        # Proc user for computer or human opponent
+        if input("Play against computer? (y/n) ") == 'y':
+            player_2 = 'computer'
         
         player_turn = 1
         
@@ -36,6 +42,12 @@ class Mancala:
                 if player_2 == 'human':
                     move = int(input("Player 2 - Choose Pocket 1-6: "))
                     move = self.convert_move(move, player=2)
+                else:
+                    # Basic computer randomly chooses a Mancala position
+                    valid_move = False
+                    while not(valid_move):
+                        move = self.convert_move(random.randint(1,6),player_turn)
+                        valid_move = self.valid_move(move, player_turn)
                     
             # Check if move is valid prior to performing
             if not(self.valid_move(move, player_turn)):
@@ -46,7 +58,7 @@ class Mancala:
             player_turn, game_over = self.simulate_move(move, player_turn)
             
         # Draw final board and announce winner
-        self.environment.draw_board()
+        self.draw_board()
         winner = self.determine_winner()
         print("Winner: ", winner, "!!!")
             
