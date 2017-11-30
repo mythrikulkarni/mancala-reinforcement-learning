@@ -45,7 +45,8 @@ class Mancala:
             # Perform assumed valid move and determine next to move
             player_turn, game_over = self.simulate_move(move, player_turn)
             
-        # Announce winner
+        # Draw final board and announce winner
+        self.environment.draw_board()
         winner = self.determine_winner()
         print("Winner: ", winner, "!!!")
             
