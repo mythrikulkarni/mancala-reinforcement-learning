@@ -26,12 +26,13 @@ class Mancala:
             player_2 = 'computer'
         
         player_turn = 1
+        previous_move = -1 # Previous move marked in board draw
         
         game_over = False
         while not(game_over):
             
             # Start by drawing the board
-            self.draw_board()
+            self.draw_board(previous_move)
             
             # Ask for move from corresponding player
             if player_turn == 1:
@@ -56,6 +57,9 @@ class Mancala:
             
             # Perform assumed valid move and determine next to move
             player_turn, game_over = self.simulate_move(move, player_turn)
+            
+            # Update previous move
+            previous_move = move
             
         # Draw final board and announce winner
         self.draw_board()
@@ -212,24 +216,34 @@ class Mancala:
         
         return next_player, game_over
     
-    def draw_board(self):
+    def draw_board(self, previous_move):
+        
+        previous_move_marker = '__'
+        
+        # Create copy for modification
+        pockets = list(self.pockets)
+        
+        # Convert the last board movement to a special marker to stand out
+        # only if previous move is valid
+        if previous_move >= 0:
+            pockets[previous_move] = previous_move_marker
         
         # Unpack list of stones in each spot for readability
-        pocket_1 = "{0:0>2}".format(self.pockets[0])
-        pocket_2 = "{0:0>2}".format(self.pockets[1])
-        pocket_3 = "{0:0>2}".format(self.pockets[2])
-        pocket_4 = "{0:0>2}".format(self.pockets[3])
-        pocket_5 = "{0:0>2}".format(self.pockets[4])
-        pocket_6 = "{0:0>2}".format(self.pockets[5])
-        mancala_1 = "{0:0>2}".format(self.pockets[6])
+        pocket_1 = "{0:0>2}".format(pockets[0])
+        pocket_2 = "{0:0>2}".format(pockets[1])
+        pocket_3 = "{0:0>2}".format(pockets[2])
+        pocket_4 = "{0:0>2}".format(pockets[3])
+        pocket_5 = "{0:0>2}".format(pockets[4])
+        pocket_6 = "{0:0>2}".format(pockets[5])
+        mancala_1 = "{0:0>2}".format(pockets[6])
         
-        pocket_7 = "{0:0>2}".format(self.pockets[7])
-        pocket_8 = "{0:0>2}".format(self.pockets[8])
-        pocket_9 = "{0:0>2}".format(self.pockets[9])
-        pocket_10 = "{0:0>2}".format(self.pockets[10])
-        pocket_11 = "{0:0>2}".format(self.pockets[11])
-        pocket_12 = "{0:0>2}".format(self.pockets[12])
-        mancala_2 = "{0:0>2}".format(self.pockets[13])
+        pocket_7 = "{0:0>2}".format(pockets[7])
+        pocket_8 = "{0:0>2}".format(pockets[8])
+        pocket_9 = "{0:0>2}".format(pockets[9])
+        pocket_10 = "{0:0>2}".format(pockets[10])
+        pocket_11 = "{0:0>2}".format(pockets[11])
+        pocket_12 = "{0:0>2}".format(pockets[12])
+        mancala_2 = "{0:0>2}".format(pockets[13])
         
         lower_pockets = [pocket_1,pocket_2,pocket_3,pocket_4,pocket_5,pocket_6]
         upper_pockets = [pocket_12,pocket_11,pocket_10,pocket_9,pocket_8,pocket_7]
