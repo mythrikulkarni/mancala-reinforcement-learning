@@ -10,4 +10,5 @@ Run start.py
 
 ### Feature Roadmap
 - Improved ASCII art
+- Display computers previous move to human players
 - Framework for Reinforcement Learning
