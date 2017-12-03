@@ -6,6 +6,7 @@ This is a temporary script file.
 """
 
 import random
+import numpy as np
 
 class Mancala:
     
@@ -216,7 +217,7 @@ class Mancala:
         
         return next_player, game_over
     
-    def draw_board(self, previous_move):
+    def draw_board(self, previous_move=-1):
         
         previous_move_marker = '__'
         
@@ -257,3 +258,34 @@ class Mancala:
         print("|_________________________________________________________________|")
         
         return True
+    
+    def get_state(self, player):
+        """ Returns the unique numeric state of the board for each player from
+            the players own perspective. Mancala pockets not necessary but they
+            can act as the reward to the computer at the end of the game.
+        """
+        
+        assumed_max_stones_per_pocket = 16
+        
+        pocket_copy = list(self.pockets)
+        
+        # Flip the board interpretation if player 2
+        if player == 1:
+            relevant_pockets = pocket_copy[:6] + pocket_copy[7:13]
+        else:
+            relevant_pockets = pocket_copy[7:13] + pocket_copy[:6]
+            
+        # Convert mancala base counting system to decimal for state
+        # Conversion similar to octal-2-decimal except the base number
+        # is max_stones+1
+        base_number = assumed_max_stones_per_pocket + 1
+        
+        # Use int64 due to massive number of combinations which may occur
+        # Should be optimized in the future to account for many situations
+        # which do not occur in practice (eg, 12 stones in all pockets)
+        multiplier_index = np.arange(len(relevant_pockets)-1,-1,-1, dtype='int64')
+        multipliers = base_number**multiplier_index
+        state_pieces = multipliers*np.array(relevant_pockets)
+        state = np.sum(state_pieces)
+        
+        return state
