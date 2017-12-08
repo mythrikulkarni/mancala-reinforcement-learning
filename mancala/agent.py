@@ -7,19 +7,22 @@ Created on Fri Dec  8 12:00:32 2017
 
 import logging
 import random
+import pickle
 
 class Agent:
     
-    def __init__(self, alpha=0.5, gamma=0.5, max_actions=6 , load_agent=None):
-        if load_agent is None:
+    def __init__(self, alpha=0.5, gamma=0.5, epsilon=0.9, max_actions=6 , load_agent_path=None):
+        if load_agent_path is None:
             self.statemap = {}
             self.max_actions = max_actions
             self.previous_state = 0
             self.previous_action = 0
             self.alpha = alpha
             self.gamma = gamma
+            self.epsilon = epsilon
         else:
-            self.statemap = {}
+            with open(load_agent_path, 'rb') as infile:
+                self.statemap = pickle.load(infile)
             self.max_actions = max_actions
             self.previous_state = 0
             self.previous_action = 0
@@ -36,7 +39,7 @@ class Agent:
         hashed_previous_state = hash(''.join(map(str, self.previous_state)))
         
         current_q_set = self.statemap.get(hashed_current_state)
-        previous_q_set = self.statemap.get(hashed_current_state)
+        previous_q_set = self.statemap.get(hashed_previous_state)
         
         # Add new dictionary key/value pairs for new states seen
         if current_q_set is None:
@@ -52,19 +55,32 @@ class Agent:
         # Update Q
         self.statemap[hashed_previous_state][self.previous_action] = q_s_a
 
-#        # Update previous move (after converting from 1-6)
-#        self.previous_action = current_move-1
-
+        # Track previous state for r=delayed reward assignment problem
         self.previous_state = current_state
 
         return True
     
-    def take_action(self):
+    def take_action(self, current_state):
         
-        action = random.randint(0,5)
+        # Random action 1-epsilon percent of the time
+        if random.random()>self.epsilon:
+            action = random.randint(0,5)
+        else:
+            # Greedy action taking
+            hashed_current_state = hash(''.join(map(str, current_state)))
+            current_q_set = self.statemap.get(hashed_current_state)
+            if current_q_set is None:
+                self.statemap[hashed_current_state] =  [0]*self.max_actions
+                current_q_set = [0]*self.max_actions
+            action = current_q_set.index(max(current_q_set)) # Argmax of Q
+            
         self.previous_action = action
         
         # Convert computer randomness to appropriate action for mancala usage
         converted_action = action+1
         
         return converted_action
+    
+    def save_agent(self, save_path):
+        with open(save_path, 'wb') as outfile:
+            pickle.dump(self.statemap, outfile)

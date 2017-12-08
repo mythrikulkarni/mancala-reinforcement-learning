@@ -39,7 +39,7 @@ class Mancala:
             # Proc user for computer or human opponent
             if input("Player 2 human? (y/n) ") == 'n':
                 player_2 = 'computer'
-                mancala_agent = agent.Agent()
+                mancala_agent = agent.Agent(epsilon=1.0)
                 mancala_agent.previous_state = self.get_state(player=2)
         
         player_turn = 1
@@ -71,7 +71,7 @@ class Mancala:
                     # Basic computer randomly chooses a Mancala position
                     valid_move = False
                     while not(valid_move):
-                        computer_action = mancala_agent.take_action()
+                        computer_action = mancala_agent.take_action(self.get_state(player_turn))
                         move = self.convert_move(computer_action, player_turn)
                         valid_move = self.valid_move(move, player_turn)
                         

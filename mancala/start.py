@@ -17,6 +17,9 @@ def main(n_games=1):
         environment.play_game(reinforcement_learning=True)
         n_games -= 1
         
+    # Save agent
+    environment.mancala_agent.save_agent('model/mancala_agent.pkl')
+        
     return environment
 
 
