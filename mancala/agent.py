@@ -26,7 +26,7 @@ class Agent:
             self.gamma = gamma
             logging.warning('Missing code to load agent!')
             
-    def update_q(self, current_state, reward=0):
+    def update_q(self, current_state, current_move, reward=0):
         
         # Assume no reward unless explicitly specified
 
@@ -50,5 +50,8 @@ class Agent:
 
         # Update Q
         self.statemap[hashed_previous_state][self.previous_action] = q_s_a
+
+        # Update previous move (after converting from 1-6)
+        self.previous_action = current_move-1
 
         return True

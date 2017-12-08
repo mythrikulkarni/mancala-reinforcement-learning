@@ -13,6 +13,7 @@ class Mancala:
     
     def __init__(self):
         self.pockets = self.initialize_board()
+        self.mancala_agent = agent.Agent()
         
     def play_game(self):
         
@@ -21,7 +22,7 @@ class Mancala:
         
         player_1 = 'computer'
         player_2 = 'computer'
-        mancala_agent = agent.Agent()
+        mancala_agent = self.mancala_agent
         mancala_agent.previous_state = self.get_state(player=2)
         
 #        
@@ -65,14 +66,16 @@ class Mancala:
                     move = int(input("Player 2 - Choose Pocket 1-6: "))
                     move = self.convert_move(move, player=2)
                 else:
-                    # Inject the state into the agent for learning
-                    mancala_agent.update_q(self.get_state(player_turn))
-                    
                     # Basic computer randomly chooses a Mancala position
                     valid_move = False
                     while not(valid_move):
-                        move = self.convert_move(random.randint(1,6),player_turn)
+                        computer_action = random.randint(0,5) # Raw 0-5 for reinforcement learning
+                        computer_move = computer_action + 1 # Convert 0-5 to 1-6 for mancala usage
+                        move = self.convert_move(computer_move,player_turn)
                         valid_move = self.valid_move(move, player_turn)
+                        
+                    # Inject the state into the agent for learning
+                    mancala_agent.update_q(self.get_state(player_turn), computer_action)
                     
             # Check if move is valid prior to performing
             if not(self.valid_move(move, player_turn)):
@@ -86,10 +89,12 @@ class Mancala:
             previous_move = move
             
         # Assume mancala agent is player 2 for now
-        mancala_agent.update_q(self.get_state(player=2), self.pockets[13])
+        mancala_agent.update_q(self.get_state(player=2), -1, self.pockets[13])
         
         print(mancala_agent.statemap)
-            
+        # Update agent for persistence
+        self.mancala_agent = mancala_agent    
+        
         # Draw final board and announce winner
         self.draw_board()
         winner = self.determine_winner()
