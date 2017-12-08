@@ -7,7 +7,12 @@ Run start.py
 
 ### Current Features
 - Ability to play mancala human vs human
+- Basic Q Learning Implementation
 
 ### Feature Roadmap
 - Improved ASCII art
-- Framework for Reinforcement Learning
+- Reinforcement Learning model saving/loading
+- Improved code quality
+- Function definitions
+- Epsilon-Greedy Action Taking by Agent
+- Ability to play against reinforcement learning model instead of current random pocket action

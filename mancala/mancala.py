@@ -6,24 +6,41 @@ This is a temporary script file.
 """
 
 import random
+import numpy as np
+import agent
 
 class Mancala:
     
     def __init__(self):
         self.pockets = self.initialize_board()
+        self.mancala_agent = agent.Agent()
         
-    def play_game(self):
+    def play_game(self, reinforcement_learning = False):
         
         # Reset board
-        self.initialize_board()
+        self.pockets = self.initialize_board()
         
-        # Assume both players are humans for now
-        player_1 = 'human'
-        player_2 = 'human'
-        
-        # Proc user for computer or human opponent
-        if input("Play against computer? (y/n) ") == 'y':
+        if reinforcement_learning == True:
+            player_1 = 'computer'
             player_2 = 'computer'
+            mancala_agent = self.mancala_agent
+            mancala_agent.previous_state = self.get_state(player=2)
+        
+        else:
+            # Assume both players are humans for now
+            player_1 = 'human'
+            player_2 = 'human'
+            
+            # Computer or human player 1
+            if input("Player 1 human? (y/n) ") == 'n':
+                player_1 = 'computer'
+                #mancala_agent = agent.Agent()
+            
+            # Proc user for computer or human opponent
+            if input("Player 2 human? (y/n) ") == 'n':
+                player_2 = 'computer'
+                mancala_agent = agent.Agent()
+                mancala_agent.previous_state = self.get_state(player=2)
         
         player_turn = 1
         previous_move = -1 # Previous move marked in board draw
@@ -32,13 +49,20 @@ class Mancala:
         while not(game_over):
             
             # Start by drawing the board
-            self.draw_board(previous_move)
+            if reinforcement_learning == False:
+                self.draw_board(previous_move)
             
             # Ask for move from corresponding player
             if player_turn == 1:
                 if player_1 == 'human':
                     move = int(input("Player 1 - Choose Pocket 1-6: "))
                     move = self.convert_move(move, player=1)
+                else:
+                    # Basic computer randomly chooses a Mancala position
+                    valid_move = False
+                    while not(valid_move):
+                        move = self.convert_move(random.randint(1,6),player_turn)
+                        valid_move = self.valid_move(move, player_turn)
             else:
                 if player_2 == 'human':
                     move = int(input("Player 2 - Choose Pocket 1-6: "))
@@ -47,8 +71,12 @@ class Mancala:
                     # Basic computer randomly chooses a Mancala position
                     valid_move = False
                     while not(valid_move):
-                        move = self.convert_move(random.randint(1,6),player_turn)
+                        computer_action = mancala_agent.take_action()
+                        move = self.convert_move(computer_action, player_turn)
                         valid_move = self.valid_move(move, player_turn)
+                        
+                    # Inject the state into the agent for learning
+                    mancala_agent.update_q(self.get_state(player_turn))
                     
             # Check if move is valid prior to performing
             if not(self.valid_move(move, player_turn)):
@@ -61,10 +89,17 @@ class Mancala:
             # Update previous move
             previous_move = move
             
-        # Draw final board and announce winner
-        self.draw_board()
-        winner = self.determine_winner()
-        print("Winner: ", winner, "!!!")
+        # Assume mancala agent is player 2 for now
+        mancala_agent.update_q(self.get_state(player=2), self.pockets[13])
+
+        # Update agent for persistence
+        self.mancala_agent = mancala_agent    
+        
+        if reinforcement_learning == False:
+            # Draw final board and announce winner
+            self.draw_board()
+            winner = self.determine_winner()
+            print("Winner: ", winner, "!!!")
             
     def convert_move(self, move, player):
         """ Converts the standard 1-6 input of the player into the corresponding
@@ -94,7 +129,9 @@ class Mancala:
     
     def initialize_board(self):
         
-        pockets = [4]*14
+        num_stones_on_start = 1 # Normally 4, 1 for debugging
+        
+        pockets = [num_stones_on_start]*14
         pockets[6] = 0
         pockets[13] = 0
         
@@ -216,7 +253,7 @@ class Mancala:
         
         return next_player, game_over
     
-    def draw_board(self, previous_move):
+    def draw_board(self, previous_move=-1):
         
         previous_move_marker = '__'
         
@@ -257,3 +294,34 @@ class Mancala:
         print("|_________________________________________________________________|")
         
         return True
+    
+    def get_state(self, player):
+        """ Returns the unique numeric state of the board for each player from
+            the players own perspective. Mancala pockets not necessary but they
+            can act as the reward to the computer at the end of the game.
+        """
+        
+        assumed_max_stones_per_pocket = 16
+        
+        pocket_copy = list(self.pockets)
+        
+        # Flip the board interpretation if player 2
+        if player == 1:
+            relevant_pockets = pocket_copy[:6] + pocket_copy[7:13]
+        else:
+            relevant_pockets = pocket_copy[7:13] + pocket_copy[:6]
+            
+#        # Convert mancala base counting system to decimal for state
+#        # Conversion similar to octal-2-decimal except the base number
+#        # is max_stones+1
+#        base_number = assumed_max_stones_per_pocket + 1
+#        
+#        # Use int64 due to massive number of combinations which may occur
+#        # Should be optimized in the future to account for many situations
+#        # which do not occur in practice (eg, 12 stones in all pockets)
+#        multiplier_index = np.arange(len(relevant_pockets)-1,-1,-1, dtype='int64')
+#        multipliers = base_number**multiplier_index
+#        state_pieces = multipliers*np.array(relevant_pockets)
+#        state = np.sum(state_pieces)
+        
+        return relevant_pockets
