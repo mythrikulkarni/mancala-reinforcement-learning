@@ -7,6 +7,7 @@ This is a temporary script file.
 
 import random
 import numpy as np
+import agent
 
 class Mancala:
     
@@ -25,6 +26,7 @@ class Mancala:
         # Proc user for computer or human opponent
         if input("Play against computer? (y/n) ") == 'y':
             player_2 = 'computer'
+            mancala_agent = agent.Agent()
         
         player_turn = 1
         previous_move = -1 # Previous move marked in board draw
