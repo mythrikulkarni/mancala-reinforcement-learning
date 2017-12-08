@@ -6,6 +6,7 @@ Created on Fri Dec  8 12:00:32 2017
 """
 
 import logging
+import random
 
 class Agent:
     
@@ -26,7 +27,7 @@ class Agent:
             self.gamma = gamma
             logging.warning('Missing code to load agent!')
             
-    def update_q(self, current_state, current_move, reward=0):
+    def update_q(self, current_state, reward=0):
         
         # Assume no reward unless explicitly specified
 
@@ -51,7 +52,19 @@ class Agent:
         # Update Q
         self.statemap[hashed_previous_state][self.previous_action] = q_s_a
 
-        # Update previous move (after converting from 1-6)
-        self.previous_action = current_move-1
+#        # Update previous move (after converting from 1-6)
+#        self.previous_action = current_move-1
+
+        self.previous_state = current_state
 
         return True
+    
+    def take_action(self):
+        
+        action = random.randint(0,5)
+        self.previous_action = action
+        
+        # Convert computer randomness to appropriate action for mancala usage
+        converted_action = action+1
+        
+        return converted_action

@@ -9,12 +9,21 @@ from mancala import Mancala
 
 # Script used for debugging and go-to place to interact with game
 
-def main():
+def main(n_games=1):
+    
     environment = Mancala()
-    environment.play_game()
+    
+    while n_games>0:
+        environment.play_game(reinforcement_learning=True)
+        n_games -= 1
+        
     return environment
 
 
 if __name__ == "__main__":
     print("TODO: Add function definitions")
-    environment = main()
+    environment = main(n_games = 1000000)
+    
+    # Output agent state mapping
+    print(environment.mancala_agent.statemap)
+    

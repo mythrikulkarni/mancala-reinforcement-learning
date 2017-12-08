@@ -15,31 +15,32 @@ class Mancala:
         self.pockets = self.initialize_board()
         self.mancala_agent = agent.Agent()
         
-    def play_game(self):
+    def play_game(self, reinforcement_learning = False):
         
         # Reset board
-        self.initialize_board()
+        self.pockets = self.initialize_board()
         
-        player_1 = 'computer'
-        player_2 = 'computer'
-        mancala_agent = self.mancala_agent
-        mancala_agent.previous_state = self.get_state(player=2)
+        if reinforcement_learning == True:
+            player_1 = 'computer'
+            player_2 = 'computer'
+            mancala_agent = self.mancala_agent
+            mancala_agent.previous_state = self.get_state(player=2)
         
-#        
-#        # Assume both players are humans for now
-#        player_1 = 'human'
-#        player_2 = 'human'
-#        
-#        # Computer or human player 1
-#        if input("Player 1 human? (y/n) ") == 'n':
-#            player_1 = 'computer'
-#            #mancala_agent = agent.Agent()
-#        
-#        # Proc user for computer or human opponent
-#        if input("Player 2 human? (y/n) ") == 'n':
-#            player_2 = 'computer'
-#            mancala_agent = agent.Agent()
-#            mancala_agent.previous_state = self.get_state(player=2)
+        else:
+            # Assume both players are humans for now
+            player_1 = 'human'
+            player_2 = 'human'
+            
+            # Computer or human player 1
+            if input("Player 1 human? (y/n) ") == 'n':
+                player_1 = 'computer'
+                #mancala_agent = agent.Agent()
+            
+            # Proc user for computer or human opponent
+            if input("Player 2 human? (y/n) ") == 'n':
+                player_2 = 'computer'
+                mancala_agent = agent.Agent()
+                mancala_agent.previous_state = self.get_state(player=2)
         
         player_turn = 1
         previous_move = -1 # Previous move marked in board draw
@@ -48,7 +49,8 @@ class Mancala:
         while not(game_over):
             
             # Start by drawing the board
-            self.draw_board(previous_move)
+            if reinforcement_learning == False:
+                self.draw_board(previous_move)
             
             # Ask for move from corresponding player
             if player_turn == 1:
@@ -69,13 +71,12 @@ class Mancala:
                     # Basic computer randomly chooses a Mancala position
                     valid_move = False
                     while not(valid_move):
-                        computer_action = random.randint(0,5) # Raw 0-5 for reinforcement learning
-                        computer_move = computer_action + 1 # Convert 0-5 to 1-6 for mancala usage
-                        move = self.convert_move(computer_move,player_turn)
+                        computer_action = mancala_agent.take_action()
+                        move = self.convert_move(computer_action, player_turn)
                         valid_move = self.valid_move(move, player_turn)
                         
                     # Inject the state into the agent for learning
-                    mancala_agent.update_q(self.get_state(player_turn), computer_action)
+                    mancala_agent.update_q(self.get_state(player_turn))
                     
             # Check if move is valid prior to performing
             if not(self.valid_move(move, player_turn)):
@@ -89,16 +90,16 @@ class Mancala:
             previous_move = move
             
         # Assume mancala agent is player 2 for now
-        mancala_agent.update_q(self.get_state(player=2), -1, self.pockets[13])
-        
-        print(mancala_agent.statemap)
+        mancala_agent.update_q(self.get_state(player=2), self.pockets[13])
+
         # Update agent for persistence
         self.mancala_agent = mancala_agent    
         
-        # Draw final board and announce winner
-        self.draw_board()
-        winner = self.determine_winner()
-        print("Winner: ", winner, "!!!")
+        if reinforcement_learning == False:
+            # Draw final board and announce winner
+            self.draw_board()
+            winner = self.determine_winner()
+            print("Winner: ", winner, "!!!")
             
     def convert_move(self, move, player):
         """ Converts the standard 1-6 input of the player into the corresponding
@@ -128,7 +129,9 @@ class Mancala:
     
     def initialize_board(self):
         
-        pockets = [4]*14
+        num_stones_on_start = 1 # Normally 4, 1 for debugging
+        
+        pockets = [num_stones_on_start]*14
         pockets[6] = 0
         pockets[13] = 0
         
