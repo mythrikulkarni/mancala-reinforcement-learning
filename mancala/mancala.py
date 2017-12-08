@@ -39,7 +39,7 @@ class Mancala:
             # Proc user for computer or human opponent
             if input("Player 2 human? (y/n) ") == 'n':
                 player_2 = 'computer'
-                mancala_agent = agent.Agent(epsilon=1.0)
+                mancala_agent = self.mancala_agent
                 mancala_agent.previous_state = self.get_state(player=2)
         
         player_turn = 1
