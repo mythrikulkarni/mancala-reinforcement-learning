@@ -8,8 +8,6 @@ Created on Thu Nov 30 10:40:03 2017
 import logging
 from mancala import Mancala
 
-# Script used for debugging and go-to place to interact with game
-
 def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancala_agent.pkl'):
     
     environment = Mancala()

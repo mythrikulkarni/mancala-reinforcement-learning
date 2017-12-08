@@ -3,16 +3,15 @@ This repo will contain all code related to simulating a game of Mancala, includi
 
 **How to Play**
 
-Run start.py
+Run train_mancala_agent.py to train the RL algorithm
+Run play_mancala.py to play a game of mancala
 
 ### Current Features
-- Ability to play mancala human vs human
+- Ability to play Mancala human vs human
+- Ability to play Mancala human vs trained RL algorithm
 - Basic Q Learning Implementation
+- Model Saving/Loading to Iteratively Train and Play Against
 
 ### Feature Roadmap
-- Improved ASCII art
-- Reinforcement Learning model saving/loading
 - Improved code quality
 - Function definitions
-- Epsilon-Greedy Action Taking by Agent
-- Ability to play against reinforcement learning model instead of current random pocket action
