@@ -5,7 +5,6 @@ Created on Fri Dec  8 12:00:32 2017
 @author: blamp
 """
 
-import logging
 import random
 import pickle
 
@@ -14,21 +13,17 @@ class Agent:
     def __init__(self, alpha=0.5, gamma=0.5, epsilon=0.9, max_actions=6 , load_agent_path=None):
         if load_agent_path is None:
             self.statemap = {}
-            self.max_actions = max_actions
-            self.previous_state = 0
-            self.previous_action = 0
-            self.alpha = alpha
-            self.gamma = gamma
-            self.epsilon = epsilon
         else:
             with open(load_agent_path, 'rb') as infile:
                 self.statemap = pickle.load(infile)
-            self.max_actions = max_actions
-            self.previous_state = 0
-            self.previous_action = 0
-            self.alpha = alpha
-            self.gamma = gamma
-            logging.warning('Missing code to load agent!')
+        
+        # Parameters not saved in pkl file
+        self.max_actions = max_actions
+        self.previous_state = 0
+        self.previous_action = 0
+        self.alpha = alpha
+        self.gamma = gamma
+        self.epsilon = epsilon
             
     def update_q(self, current_state, reward=0):
         

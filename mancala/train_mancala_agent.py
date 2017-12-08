@@ -29,7 +29,6 @@ def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancal
 
 
 if __name__ == "__main__":
-    print("TODO: Add function definitions")
     environment = train_agent(n_games = 1000, games_per_checkpoint=100)
     
     

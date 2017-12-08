@@ -11,9 +11,13 @@ import agent
 
 class Mancala:
     
-    def __init__(self):
+    def __init__(self, mancala_agent=None):
         self.pockets = self.initialize_board()
-        self.mancala_agent = agent.Agent()
+        # Load Mancala agent if necessary
+        if mancala_agent is None:
+            self.mancala_agent = agent.Agent()
+        else:
+            self.mancala_agent = mancala_agent
         
     def play_game(self, reinforcement_learning = False):
         
@@ -129,7 +133,7 @@ class Mancala:
     
     def initialize_board(self):
         
-        num_stones_on_start = 1 # Normally 4, 1 for debugging
+        num_stones_on_start = 4
         
         pockets = [num_stones_on_start]*14
         pockets[6] = 0
