@@ -13,12 +13,9 @@ from agent import Agent
 def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancala_agent.pkl'):
     
     # If model already exists, expand on it, otherwise start fresh
-    if os.path.exists(model_save_path):
-        loaded_agent = Agent(load_agent_path = model_save_path)
-        environment = Mancala(loaded_agent)
-    else:
-        environment = Mancala()
-    
+    loaded_agent = Agent(load_agent_path = model_save_path)
+    environment = Mancala(loaded_agent)
+
     while n_games>0:
         environment.play_game(reinforcement_learning=True)
         # Checkpoint
@@ -35,6 +32,6 @@ def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancal
 
 
 if __name__ == "__main__":
-    environment = train_agent(n_games = 1, games_per_checkpoint=25000)
+    environment = train_agent(n_games = 1000000, games_per_checkpoint=25000)
     
     

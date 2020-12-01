@@ -92,12 +92,13 @@ class Mancala:
             
             # Update previous move
             previous_move = move
-            
-        # Assume mancala agent is player 2 for now
-        mancala_agent.update_q(self.get_state(player=2), self.pockets[13])
 
-        # Update agent for persistence
-        self.mancala_agent = mancala_agent    
+        if reinforcement_learning == True:
+            # Assume mancala agent is player 2 for now
+            mancala_agent.update_q(self.get_state(player=2), self.pockets[13])
+
+            # Update agent for persistence
+            self.mancala_agent = mancala_agent
         
         if reinforcement_learning == False:
             # Draw final board and announce winner

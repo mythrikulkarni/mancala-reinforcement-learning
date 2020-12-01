@@ -7,8 +7,16 @@ Created on Thu Nov 30 10:40:03 2017
 
 from mancala import Mancala
 from agent import Agent
+import os
 
-def play_game(model_path='model/mancala_agent.pkl'):
+def play_game():
+    # Create model path if doesn't exist
+    base_cwd = os.getcwd()
+    model_dir = base_cwd + "\\model"
+    if not os.path.exists(model_dir):
+        os.mkdir(model_dir)
+    model_path = model_dir + "\\mancala_agent.pkl"
+
     loaded_agent = Agent(load_agent_path = model_path)
     environment = Mancala(loaded_agent)
     environment.play_game()

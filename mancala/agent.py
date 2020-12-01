@@ -11,11 +11,12 @@ import pickle
 class Agent:
     
     def __init__(self, alpha=0.5, gamma=0.5, epsilon=0.9, max_actions=6 , load_agent_path=None):
-        if load_agent_path is None:
-            self.statemap = {}
-        else:
+        try:
             with open(load_agent_path, 'rb') as infile:
                 self.statemap = pickle.load(infile)
+        except FileNotFoundError:
+            print("No pretrained agent exists. Creating new agent")
+            self.statemap = {}
         
         # Parameters not saved in pkl file
         self.max_actions = max_actions
