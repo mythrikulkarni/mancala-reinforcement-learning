@@ -12,10 +12,10 @@ import os
 def play_game():
     # Create model path if doesn't exist
     base_cwd = os.getcwd()
-    model_dir = base_cwd + "\\model"
+    model_dir = base_cwd + "/model"
     if not os.path.exists(model_dir):
         os.mkdir(model_dir)
-    model_path = model_dir + "\\mancala_agent.pkl"
+    model_path = model_dir + "/mancala_agent.pkl"
 
     loaded_agent = Agent(load_agent_path = model_path)
     environment = Mancala(loaded_agent)
@@ -24,5 +24,3 @@ def play_game():
 
 if __name__ == "__main__":
     play_game()
-    
-    

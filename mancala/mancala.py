@@ -38,7 +38,7 @@ class Mancala:
             # Computer or human player 1
             if input("Player 1 human? (y/n) ") == 'n':
                 player_1 = 'computer'
-                #mancala_agent = agent.Agent()
+                mancala_agent = agent.Agent()
             
             # Proc user for computer or human opponent
             if input("Player 2 human? (y/n) ") == 'n':

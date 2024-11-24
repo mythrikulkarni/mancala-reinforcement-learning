@@ -7,16 +7,24 @@ Created on Fri Dec  8 12:00:32 2017
 
 import random
 import pickle
+import numpy as np
+import os
 
 class Agent:
     
-    def __init__(self, alpha=0.5, gamma=0.5, epsilon=0.9, max_actions=6 , load_agent_path=None):
-        try:
-            with open(load_agent_path, 'rb') as infile:
-                self.statemap = pickle.load(infile)
-        except FileNotFoundError:
+    def __init__(self, alpha=0.5, gamma=0.5, temperature = 1.0, epsilon=0.9, max_actions=6 , load_agent_path=None):
+        if load_agent_path and os.path.exists(load_agent_path):
+            try:
+                with open(load_agent_path, 'rb') as infile:
+                    self.statemap = pickle.load(infile)
+            except FileNotFoundError:
+                print("No pretrained agent exists. Creating new agent")
+                self.statemap = {}
+        else:
             print("No pretrained agent exists. Creating new agent")
             self.statemap = {}
+
+        self.temperature = temperature # Parameter to control exploration
         
         # Parameters not saved in pkl file
         self.max_actions = max_actions
@@ -25,58 +33,77 @@ class Agent:
         self.alpha = alpha
         self.gamma = gamma
         self.epsilon = epsilon
+
+        self.q_table = {} # Initialize Q-table
+
+        # Load agent if path is provided
+        if load_agent_path:
+            self.load_agent(load_agent_path)
+
+    def softmax(self, q_values):
+        # Compute softmax probabilities for Q-values
+        q_values = q_values - np.max(q_values) # Prevent overflow
+        exp_values = np.exp(q_values / self.temperature)
+        probabilities = exp_values / np.sum(exp_values)
+        return probabilities
             
     def update_q(self, current_state, reward=0):
-        
+        # Update Q value for previous state-action pair
+        if self.previous_state is None or self.previous_action is None:
+            self.previous_state = current_state
+            return
+
         # Assume no reward unless explicitly specified
 
         # Convert state to a unique identifier
         hashed_current_state = hash(''.join(map(str, current_state)))
         hashed_previous_state = hash(''.join(map(str, self.previous_state)))
         
-        current_q_set = self.statemap.get(hashed_current_state)
-        previous_q_set = self.statemap.get(hashed_previous_state)
+        # Initialize Q-values for new states if needed
+        if hashed_current_state not in self.q_table:
+            self.q_table[hashed_current_state] = np.zeros(self.max_actions)
+        if hashed_previous_state not in self.q_table:
+            self.q_table[hashed_previous_state] = np.zeros(self.max_actions)
         
-        # Add new dictionary key/value pairs for new states seen
-        if current_q_set is None:
-            self.statemap[hashed_current_state] =  [0]*self.max_actions
-            current_q_set = [0]*self.max_actions
-        if previous_q_set is None:
-            self.statemap[hashed_previous_state] =  [0]*self.max_actions
-            
-        # Q update formula
-        q_s_a = self.statemap[hashed_previous_state][self.previous_action]
-        q_s_a = q_s_a + self.alpha*(reward+self.gamma*max(current_q_set)-q_s_a)
 
-        # Update Q
-        self.statemap[hashed_previous_state][self.previous_action] = q_s_a
-
-        # Track previous state for r=delayed reward assignment problem
+        # Update Q-value using Q-learning formula
+        prev_q_value = self.q_table[hashed_previous_state][self.previous_action]
+        max_future_q = np.max(self.q_table[hashed_current_state])
+        self.q_table[hashed_previous_state][self.previous_action] = (prev_q_value + self.alpha * (reward + self.gamma * max_future_q - prev_q_value))
+        
+        # Update previous state-action pair
         self.previous_state = current_state
-
-        return True
     
     def take_action(self, current_state):
-        
-        # Random action 1-epsilon percent of the time
-        if random.random()>self.epsilon:
-            action = random.randint(0,5)
-        else:
-            # Greedy action taking
-            hashed_current_state = hash(''.join(map(str, current_state)))
-            current_q_set = self.statemap.get(hashed_current_state)
-            if current_q_set is None:
-                self.statemap[hashed_current_state] =  [0]*self.max_actions
-                current_q_set = [0]*self.max_actions
-            action = current_q_set.index(max(current_q_set)) # Argmax of Q
-            
+
+        # Choose an action using Softmax exploration
+        hashed_state = hash(tuple(current_state))
+
+        # Initialize Q-values for unseen states
+        if hashed_state not in self.q_table:
+            self.q_table[hashed_state] = np.zeros(self.max_actions)
+
+        # Get Q-values for current state
+        q_values = self.q_table[hashed_state]
+
+        # Compute Softmax probabilities and sample action
+        probabilities = self.softmax(q_values)
+        action = np.random.choice(len(probabilities), p = probabilities)
+
+        # Save chosen action for future updates
+        self.previous_state = current_state
         self.previous_action = action
-        
-        # Convert computer randomness to appropriate action for mancala usage
-        converted_action = action+1
-        
-        return converted_action
+
+        return action + 1
     
     def save_agent(self, save_path):
         with open(save_path, 'wb') as outfile:
             pickle.dump(self.statemap, outfile)
+
+    def update_temperature(self, decay_rate, min_temperature = 0.01):
+        # Apply temperature decay over time
+        self.temperature = max(self.temperature * decay_rate, min_temperature)
+
+    def load_agent(self, path):
+        with open(path, 'rb') as infile:
+            self.q_table = pickle.load(infile)
