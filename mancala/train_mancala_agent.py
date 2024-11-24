@@ -10,6 +10,7 @@ import logging
 import matplotlib.pyplot as plt
 from mancala import Mancala
 from agent import Agent
+import numpy as np
 
 def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancala_agent.pkl'):
 
@@ -17,26 +18,25 @@ def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancal
     loaded_agent = Agent(load_agent_path = model_save_path)
     environment = Mancala(loaded_agent)
     outcomes = []
+    recent_outcomes = []
     games_won = 0
     total_games = n_games
+    #total_periods = n_games / games_per_checkpoint
 
     while n_games>0:
         winner = environment.play_game(reinforcement_learning=True)
 
         if (winner == "Player 2"):
-            outcomes.append(1)
+            recent_outcomes.append(1)
             games_won += 1
         elif winner == "Player 1":
-            outcomes.append(-1)
+            recent_outcomes.append(-1)
         else:
-            outcomes.append(0)
-
-
-
-
+            recent_outcomes.append(0)       
 
         # Checkpoint
         if n_games%games_per_checkpoint == 0:
+            outcomes.append(np.mean(recent_outcomes[-games_per_checkpoint:]))
             environment.mancala_agent.save_agent(model_save_path)
             logging.info('Saved RL Agent Model!')
             print('Remaining Games: ', n_games)
@@ -44,20 +44,20 @@ def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancal
 
     # Save final agent model
     environment.mancala_agent.save_agent(model_save_path)
-    print("Win Rate: ", games_won / total_games)
 
-    plt.plot(outcomes, label='Game Outcomes')
-    plt.title('Agent Performance over time (Every 10 games)')
-    plt.xlabel('Games Played')
-    plt.ylabel('Game outcome (1 = win, 0 = Draw, -1 = Loss)')
+    print("Win Rate: ", games_won / total_games)
+    plt.plot(outcomes, label='Game Outcomes (Moving Average)')
+    plt.title('Moving Average of Agent Performance)')
+    plt.xlabel('Number of checkpoints (25k games is 1 checkpoint)')
+    plt.ylabel('Average outcome')
     plt.grid(True)
     plt.legend()
     plt.tight_layout()
     plt.show()
-
+    
     return environment
 
 
 if __name__ == "__main__":
-    environment = train_agent(n_games = 1000, games_per_checkpoint=10)
+    environment = train_agent(n_games = 1000000, games_per_checkpoint=25000)
 

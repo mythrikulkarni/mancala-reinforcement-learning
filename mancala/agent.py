@@ -10,7 +10,7 @@ import pickle
 
 class Agent:
 
-    def __init__(self, alpha=0.5, gamma=0.5, epsilon=0.9, max_actions=6 , epsilon_min=0.1, decay_rate=0.99, load_agent_path=None):
+    def __init__(self, alpha=0.5, gamma=0.5, epsilon=0.9, max_actions=6 , epsilon_min=0.1, decay_rate=0.99, load_agent_path=None, reward=0):
         try:
             with open(load_agent_path, 'rb') as infile:
                 self.statemap = pickle.load(infile)
@@ -29,6 +29,7 @@ class Agent:
         self.epsilon_min = epsilon_min
         # Decay rate for the epsilon (exploration rate)
         self.decay_rate = decay_rate
+        self.reward = reward
 
     def update_q(self, current_state, reward=0):
 
@@ -69,7 +70,7 @@ class Agent:
     def take_action(self, current_state):
 
         # Random action 1-epsilon percent of the time
-        if random.random() < self.epsilon:
+        if random.random() > self.epsilon:
             action = random.randint(0,5)
         else:
             # Greedy action taking

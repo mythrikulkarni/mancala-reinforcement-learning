@@ -23,6 +23,7 @@ class Mancala:
 
         # Reset board
         self.pockets = self.initialize_board()
+        self.reward = 0
 
         if reinforcement_learning == True:
             player_1 = 'computer'
@@ -52,6 +53,8 @@ class Mancala:
         game_over = False
         while not(game_over):
 
+            previous_marble_count = self.pockets[13]
+
             # Start by drawing the board
             if reinforcement_learning == False:
                 self.draw_board(previous_move)
@@ -78,10 +81,14 @@ class Mancala:
                         computer_action = mancala_agent.take_action(self.get_state(player_turn))
                         move = self.convert_move(computer_action, player_turn)
                         valid_move = self.valid_move(move, player_turn)
+            
 
+                    # See how many marbles they got that turn.
+                    self.reward += 2 * (self.pockets[13] - previous_marble_count) 
                     # Inject the state into the agent for learning
-                    mancala_agent.update_q(self.get_state(player_turn))
-                    mancala_agent.decay_epsilon()
+                    mancala_agent.update_q(self.get_state(player_turn), self.reward)
+                    self.reward = 0 #Reset reward
+                    #mancala_agent.decay_epsilon()
 
             # Check if move is valid prior to performing
             if not(self.valid_move(move, player_turn)):
@@ -95,9 +102,16 @@ class Mancala:
             previous_move = move
 
         if reinforcement_learning == True:
-            # Assume mancala agent is player 2 for now
-            mancala_agent.update_q(self.get_state(player=2), self.pockets[13])
-            mancala_agent.decay_epsilon()
+            # Assume mancala agent is player 2 for now 
+            # Give final reward for how many final points they had
+            final_reward = self.pockets[13]
+            if (self.determine_winner() == "Player 2"):
+                final_reward += 1000 #Reward Winning
+            else:
+                final_reward -= 1000 #Punish losing
+
+            mancala_agent.update_q(self.get_state(player=2), final_reward)
+            #mancala_agent.decay_epsilon()
             
 
             # Update agent for persistence
@@ -202,6 +216,8 @@ class Mancala:
         opposite_pocket = opposite_pocket_dict[pocket_position]
         self.pockets[mancala_pocket] += self.pockets[opposite_pocket]
         self.pockets[opposite_pocket] = 0
+
+        self.reward += 10 * self.pockets[opposite_pocket] # To learn more on opposite side is good
 
         return True
 
