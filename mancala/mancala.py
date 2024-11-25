@@ -19,110 +19,85 @@ class Mancala:
         else:
             self.mancala_agent = mancala_agent
 
-    def play_game(self, reinforcement_learning = False):
-
-        # Reset board
+    def play_game(self, reinforcement_learning=False):
         self.pockets = self.initialize_board()
-        self.reward = 0
+        self.reward = 0  # Initialize reward
 
-        if reinforcement_learning == True:
-            player_1 = 'computer'
-            player_2 = 'computer'
+        if reinforcement_learning:
+            player_1, player_2 = 'computer', 'computer'
             mancala_agent = self.mancala_agent
             mancala_agent.previous_state = self.get_state(player=2)
-
         else:
-            # Assume both players are humans for now
-            player_1 = 'human'
-            player_2 = 'human'
-
-            # Computer or human player 1
+            player_1, player_2 = 'human', 'human'
             if input("Player 1 human? (y/n) ") == 'n':
                 player_1 = 'computer'
-                #mancala_agent = agent.Agent()
-
-            # Proc user for computer or human opponent
             if input("Player 2 human? (y/n) ") == 'n':
                 player_2 = 'computer'
                 mancala_agent = self.mancala_agent
                 mancala_agent.previous_state = self.get_state(player=2)
 
         player_turn = 1
-        previous_move = -1 # Previous move marked in board draw
-
+        previous_move = -1
         game_over = False
-        while not(game_over):
 
-            previous_marble_count = self.pockets[13]
+        while not game_over:
+            previous_marble_count = self.pockets[13]  # Track marbles in Player 2's mancala
 
-            # Start by drawing the board
-            if reinforcement_learning == False:
+            if not reinforcement_learning:
                 self.draw_board(previous_move)
 
-            # Ask for move from corresponding player
             if player_turn == 1:
                 if player_1 == 'human':
                     move = int(input("Player 1 - Choose Pocket 1-6: "))
                     move = self.convert_move(move, player=1)
                 else:
-                    # Basic computer randomly chooses a Mancala position
                     valid_move = False
-                    while not(valid_move):
-                        move = self.convert_move(random.randint(1,6),player_turn)
+                    while not valid_move:
+                        move = self.convert_move(random.randint(1, 6), player_turn)
                         valid_move = self.valid_move(move, player_turn)
             else:
                 if player_2 == 'human':
                     move = int(input("Player 2 - Choose Pocket 1-6: "))
                     move = self.convert_move(move, player=2)
                 else:
-                    # Basic computer randomly chooses a Mancala position
                     valid_move = False
-                    while not(valid_move):
+                    while not valid_move:
                         computer_action = mancala_agent.take_action(self.get_state(player_turn))
                         move = self.convert_move(computer_action, player_turn)
                         valid_move = self.valid_move(move, player_turn)
-            
 
-                    # See how many marbles they got that turn.
-                    self.reward += 2 * (self.pockets[13] - previous_marble_count) 
-                    # Inject the state into the agent for learning
-                    mancala_agent.update_q(self.get_state(player_turn), self.reward)
-                    self.reward = 0 #Reset reward
-                    #mancala_agent.decay_epsilon()
-
-            # Check if move is valid prior to performing
-            if not(self.valid_move(move, player_turn)):
+            if not self.valid_move(move, player_turn):
                 print("INVALID MOVE")
                 continue
 
-            # Perform assumed valid move and determine next to move
+            # Simulate move
             player_turn, game_over = self.simulate_move(move, player_turn)
 
-            # Update previous move
+            # Assign intermediate reward
+            marbles_gained = self.pockets[13] - previous_marble_count
+            self.reward += 2 * marbles_gained  # Reward for gaining marbles
+
+            # Update Q-learning agent
+            mancala_agent.update_q(self.get_state(player_turn), self.reward)
+            self.reward = 0  # Reset reward for next round
             previous_move = move
 
-        if reinforcement_learning == True:
-            # Assume mancala agent is player 2 for now 
-            # Give final reward for how many final points they had
+        if reinforcement_learning:
+            # Final reward for the game outcome
             final_reward = self.pockets[13]
-            if (self.determine_winner() == "Player 2"):
-                final_reward += 1000 #Reward Winning
+            if self.determine_winner() == "Player 2":
+                final_reward += 1000  # Reward for winning
             else:
-                final_reward -= 1000 #Punish losing
+                final_reward -= 1000  # Penalty for losing
 
             mancala_agent.update_q(self.get_state(player=2), final_reward)
-            #mancala_agent.decay_epsilon()
-            
-
-            # Update agent for persistence
-            self.mancala_agent = mancala_agent
+            self.mancala_agent = mancala_agent  # Update agent
+            self.reward = 0
             return self.determine_winner()
 
-        if reinforcement_learning == False:
-            # Draw final board and announce winner
-            self.draw_board()
-            winner = self.determine_winner()
-            print("Winner: ", winner, "!!!")
+        # Non-reinforcement learning outcome
+        self.draw_board()
+        print("Winner: ", self.determine_winner(), "!!!")
 
     def convert_move(self, move, player):
         """ Converts the standard 1-6 input of the player into the corresponding
@@ -201,23 +176,20 @@ class Mancala:
         return 1
 
     def capture(self, pocket_position, mancala_pocket):
-        """ Captures all stones in the pocket and pocket opposite, goes into
-        The proper mancala pocket specified as input
-        """
+        """Handles captures and assigns capture rewards."""
+        opposite_pocket_dict = {0: 12, 1: 11, 2: 10, 3: 9, 4: 8, 5: 7,
+                                7: 5, 8: 4, 9: 3, 10: 2, 11: 1, 12: 0}
 
-        opposite_pocket_dict = {0: 12, 1:11, 2:10, 3:9, 4:8, 5:7,
-                                7:5, 8:4, 9:3, 10:2, 11:1, 12:0}
-
-        # Take the stone from the pocket itself
         self.pockets[mancala_pocket] += self.pockets[pocket_position]
+        captured_stones = self.pockets[pocket_position]
         self.pockets[pocket_position] = 0
 
-        # Take the stones from the opposite pocket
         opposite_pocket = opposite_pocket_dict[pocket_position]
         self.pockets[mancala_pocket] += self.pockets[opposite_pocket]
+        captured_stones += self.pockets[opposite_pocket]
         self.pockets[opposite_pocket] = 0
 
-        self.reward += 10 * self.pockets[opposite_pocket] # To learn more on opposite side is good
+        self.reward += 10 * captured_stones  # Reward for capturing stones
 
         return True
 

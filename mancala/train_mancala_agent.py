@@ -21,7 +21,6 @@ def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancal
     recent_outcomes = []
     games_won = 0
     total_games = n_games
-    #total_periods = n_games / games_per_checkpoint
 
     while n_games>0:
         winner = environment.play_game(reinforcement_learning=True)
@@ -32,7 +31,7 @@ def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancal
         elif winner == "Player 1":
             recent_outcomes.append(-1)
         else:
-            recent_outcomes.append(0)       
+            recent_outcomes.append(0)
 
         # Checkpoint
         if n_games%games_per_checkpoint == 0:
@@ -54,7 +53,7 @@ def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancal
     plt.legend()
     plt.tight_layout()
     plt.show()
-    
+
     return environment
 
 
