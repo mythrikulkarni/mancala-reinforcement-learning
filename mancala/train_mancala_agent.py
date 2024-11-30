@@ -13,123 +13,67 @@ from agent import Agent
 import pickle
 import numpy as np
 
-def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancala_agent.pkl', initial_temperature = 1.0, temperature_decay=0.99):
-    # Ensure model directory exists, create if not
+def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancala_agent.pkl', initial_epsilon=1.0, min_epsilon = 0.05, epsilon_decay = 0.999, initial_alpha=0.3, min_alpha=0.01, alpha_decay=0.999, initial_temperature = 1.0, temperature_decay = 0.999, min_temperature =0.1):
+    """
+    Updated function to train Mancala agent with a combination of softmax and epsilon-greedy methods. 
+    Added epsilon, alpha, and temperature decay for exploration and learning rate control
+    """
+
     model_dir = os.path.dirname(model_save_path)
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
 
     # If model already exists, expand on it, otherwise start fresh
-    loaded_agent = Agent(load_agent_path = None, temperature=initial_temperature)
+    loaded_agent = Agent(load_agent_path = None, temperature = initial_temperature, epsilon=initial_epsilon, alpha = initial_alpha)
     environment = Mancala(loaded_agent)
+    
+    # Track game outcomes
+    outcomes = []
+    recent_outcomes = []
+    games_won = 0
+    total_games = n_games
 
-    results = []
-    temperatures = []
-    current_temperature = initial_temperature
-
+    # Train agent for specific number of games
     while n_games>0:
-        # Update temperature
-        loaded_agent.update_temperature(temperature_decay)
-        environment.play_game(reinforcement_learning=True)
-
-        # Track game results
-        winner = environment.determine_winner()
-        if winner == "Player 2":
-            results.append(1)
-        elif winner == "Player 1":
-            results.append(-1)
-        else:
-            results.append(0)
-
-        # Track temperature
-        temperatures.append(loaded_agent.temperature)
-
-        # Save model at checkpoints
-        if n_games%games_per_checkpoint == 0:
-            environment.mancala_agent.save_agent(model_save_path)
-            logging.info('Saved RL Agent Model!')
-            print('Remaining Games: ', n_games)
-
-        if np.mean(results[-100:]) > 0.8:
-            temperature_decay = max(temperature_decay * 0.98, 0.9)
-
-        # Temperature decay
-        current_temperature *= temperature_decay
-        n_games -= 1
+        winner = environment.play_game(reinforcement_learning=True)
         
+        # Assumes agent is Player 2
+        if winner == "Player 2":
+            games_won += 1
+            recent_outcomes.append(1)
+        elif winner == "Player 1":
+            recent_outcomes.append(-1)
+        else:
+            recent_outcomes.append(0)
+
+        # Update epsilon, alpha, and temperature    
+        loaded_agent.update_epsilon(epsilon_decay, min_epsilon)
+        loaded_agent.update_alpha(alpha_decay, min_alpha)
+        loaded_agent.update_temperature(temperature_decay, min_temperature)
+        
+        # Checkpoint
+        if n_games%games_per_checkpoint == 0:
+            outcomes.append(np.mean(recent_outcomes[-games_per_checkpoint:]))
+            environment.mancala_agent.save_agent(model_save_path)
+            print('Remaining Games: ', n_games)
+        n_games -= 1
+
     # Save final agent model
     environment.mancala_agent.save_agent(model_save_path)
 
-    # Plots results
-    plot_all(results, initial_temp=initial_temperature, decay_rate=temperature_decay, n_games=n_games, temperatures=temperatures)
-
-    # Save Q-table
     with open(model_save_path, "wb") as outfile:
-        pickle.dump(loaded_agent.q_table, outfile)
-        
+        pickle.dump(loaded_agent.statemap, outfile)
+
+    print("Win Rate: ", games_won / total_games)
+    plt.plot(outcomes, label='Game Outcomes (Moving Average)')
+    plt.title('Moving Average of Agent Performance)')
+    plt.xlabel('Number of checkpoints (25k games is 1 checkpoint)')
+    plt.ylabel('Average outcome')
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
     return environment
-
-def plot_all(results, initial_temp, decay_rate, n_games, temperatures, interval=5000, moving_avg_window=5000, win_rate_window = 5000):
-
-    # Sample results for plotting at intervals
-    sampled_results = results[::interval]
-    sampled_games = list(range(interval, len(results) + 1, interval))
-
-    # Moving average
-    moving_avg = [np.mean(results[max(0, i - moving_avg_window + 1): i + 1]) for i in range(len(results))]
-
-
-    # Win, loss, draw counts
-    win_count = results.count(1)
-    loss_count = results.count(-1)
-    draw_count = results.count(0)
-
-    # Cumulative reward calculation
-    cumulative_reward = np.cumsum(results)
-
-    # Plot for agent performance over time
-    print("Plotting Agent Performance Over Time...")
-    plt.figure(figsize=(8, 6))
-    plt.plot(sampled_games, sampled_results, label="Game Results", marker="o")
-    plt.xlabel("Game #")
-    plt.ylabel("Result (Win = 1, Loss = -1)")
-    plt.title("Agent Performance Over Time")
-    plt.axhline(y=0, color='gray', linestyle='--', label="Draw")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-    # Win/Loss/Draw Counts
-    print("Plotting Win/Loss/Draw Counts")
-    plt.figure(figsize=(8, 6))
-    plt.pie([win_count, loss_count, draw_count], labels=['Wins', 'Losses', 'Draws'],
-            autopct='%1.1f%%', startangle=90, colors=['green', 'red', 'gray'])
-    plt.title("Win/Loss/Draw Distribution")
-    plt.show()
-
-    # Plot for moving average
-    print("Plotting Moving Average Over Time...")
-    plt.figure(figsize=(8, 6))
-    plt.plot(range(len(moving_avg)), moving_avg, label=f"Moving Average (window={moving_avg_window})", color="orange", linewidth=2)
-    plt.xlabel("Game #")
-    plt.ylabel("Moving Average (Win/Loss)")
-    plt.title("Agent Performance (Moving Average)")
-    plt.axhline(y=0, color='gray', linestyle='--', label="Draw")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
-
-    # Plot cumulative rewards
-    print("Plotting Cumulative Rewards Over Time...")
-    plt.figure(figsize=(8, 6))
-    plt.plot(range(len(results)), cumulative_reward, label="Cumulative Reward", color="blue")
-    plt.xlabel("Game #")
-    plt.ylabel("Cumulative Reward")
-    plt.title("Cumulative Reward Over Time")
-    plt.axhline(y=0, color='gray', linestyle='--', label="Baseline")
-    plt.legend()
-    plt.grid(True)
-    plt.show()
 
 if __name__ == "__main__":
     environment = train_agent(n_games = 1000000, games_per_checkpoint=25000)
