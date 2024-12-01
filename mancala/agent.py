@@ -12,17 +12,17 @@ import os
 
 class Agent:
     
-    def __init__(self, alpha=0.5, gamma=0.5, temperature = 1.0, epsilon=0.9, max_actions=6, load_agent_path=None, reward = 0):
+    def __init__(self, alpha=0.4, gamma=0.5, temperature = 1.0, epsilon=1.0, max_actions=6, load_agent_path=None, reward = 0):
         """
         Updated class to include temperature, epsilon, and alpha decay
         """
 
-        if load_agent_path and os.path.exists(load_agent_path):
-            with open(load_agent_path, 'rb') as infile:
-                self.statemap = pickle.load(infile)
-        else:
-            print("No pretrained agent exists. Creating new agent")
-            self.statemap = {}
+        if load_agent_path:
+            try:
+                with open(load_agent_path, 'rb') as infile:
+                    self.model = pickle.load(infile)
+            except FileNotFoundError:
+                self.statemap = {}
 
         # Parameters not saved in pkl file
         self.temperature = temperature
