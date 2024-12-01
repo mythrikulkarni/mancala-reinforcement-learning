@@ -28,8 +28,10 @@ class Agent:
             
     def update_q(self, current_state, reward=0):
         
-        # Assume no reward unless explicitly specified
-
+       
+        reward = max(-5, min(5, reward))  # Clip reward 
+        max_possible_reward = 48  # normalize
+        reward = reward / max_possible_reward
         # Convert state to a unique identifier
         hashed_current_state = hash(''.join(map(str, current_state)))
         hashed_previous_state = hash(''.join(map(str, self.previous_state)))
