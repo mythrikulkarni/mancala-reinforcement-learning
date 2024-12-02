@@ -62,14 +62,17 @@ class Agent:
         if random.random()>self.epsilon:
             action = random.randint(0,5)
         else:
-            # Greedy action taking
             hashed_current_state = hash(''.join(map(str, current_state)))
             current_q_set = self.statemap.get(hashed_current_state)
             if current_q_set is None:
-                self.statemap[hashed_current_state] =  [0]*self.max_actions
-                current_q_set = [0]*self.max_actions
-            action = current_q_set.index(max(current_q_set)) # Argmax of Q
-            
+                self.statemap[hashed_current_state] = current_state[0:6]
+                current_q_set = current_state[0:6]
+            if current_state[5] == 1: #rem-new turn
+                action = 5
+            elif current_state[5] >= max(current_state[0:6]): #move points from pit closest to opp; assumes agent is p2
+                action = 0
+            else: # Greedy action taking [ORIGINAL]
+                action = current_q_set.index(max(current_q_set)) # Argmax of Q
         self.previous_action = action
         
         # Convert computer randomness to appropriate action for mancala usage
