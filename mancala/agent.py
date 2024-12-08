@@ -10,7 +10,7 @@ import pickle
 
 class Agent:
 
-    def __init__(self, alpha=0.5, gamma=0.5, epsilon=0.9, max_actions=6 , epsilon_min=0.1, decay_rate=0.99, load_agent_path=None, reward=0):
+    def __init__(self, alpha=0.5, gamma=0.5, epsilon=1.0, max_actions=6 , epsilon_min=0.05, decay_rate=0.999, load_agent_path=None, reward=0):
         if load_agent_path:
             try:
                 with open(load_agent_path, 'rb') as infile:

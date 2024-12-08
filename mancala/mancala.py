@@ -81,7 +81,6 @@ class Mancala:
             mancala_agent.update_q(self.get_state(player_turn), self.reward)
             self.reward = 0  # Reset reward for next round
             previous_move = move
-            mancala_agent.decay_epsilon()
 
         if reinforcement_learning:
             # Final reward for the game outcome
@@ -92,7 +91,6 @@ class Mancala:
                 final_reward -= 1000  # Penalty for losing
 
             mancala_agent.update_q(self.get_state(player=2), final_reward)
-            mancala_agent.decay_epsilon()
             self.mancala_agent = mancala_agent  # Update agent
             self.reward = 0
             return self.determine_winner()

@@ -5,7 +5,7 @@ from mancala import Mancala
 from agent import Agent
 import numpy as np
 
-def train_agent(n_games=1, games_per_checkpoint=1, model_save_dir='model/', base_filename = 'Mancala_agent', plot_save_folder='moving_averages_epsilon_decay'):
+def train_agent(n_games=1, games_per_checkpoint=1, model_save_dir='model/', base_filename = 'Mancala_agent', plot_save_folder='moving_averages_epsilon-decay'):
 
     # Ensure the save folder exists
     os.makedirs(plot_save_folder, exist_ok=True)
@@ -44,6 +44,8 @@ def train_agent(n_games=1, games_per_checkpoint=1, model_save_dir='model/', base
                 recent_outcomes.append(-1)
             else:
                 recent_outcomes.append(0)
+
+            loaded_agent.decay_epsilon()
 
             # Checkpoint
             if n_games % games_per_checkpoint == 0:
