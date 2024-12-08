@@ -10,7 +10,7 @@ import pickle
 
 class Agent:
 
-    def __init__(self, alpha=0.5, gamma=0.5, epsilon=0.9, max_actions=6 , load_agent_path=None, reward=0):
+    def __init__(self, alpha=0.4, gamma=0.5, epsilon=0.9, max_actions=6 , load_agent_path=None, reward=0):
         try:
             with open(load_agent_path, 'rb') as infile:
                 self.statemap = pickle.load(infile)
@@ -77,6 +77,12 @@ class Agent:
         converted_action = action+1
 
         return converted_action
+    
+    def update_alpha(self, alpha_decay, min_alpha):
+        """
+        Decay alpha after every move, ensuring it doesn't drop below min_alpha
+        """
+        self.alpha = max(self.alpha * alpha_decay, min_alpha)
 
     def save_agent(self, save_path):
         with open(save_path, 'wb') as outfile:

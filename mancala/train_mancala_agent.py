@@ -12,7 +12,7 @@ from mancala import Mancala
 from agent import Agent
 import numpy as np
 
-def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancala_agent.pkl'):
+def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancala_agent.pkl', initial_alpha=0.4, min_alpha=0.01, alpha_decay=0.999):
 
     # If model already exists, expand on it, otherwise start fresh
     loaded_agent = Agent(load_agent_path = model_save_path)
@@ -32,6 +32,8 @@ def train_agent(n_games=1, games_per_checkpoint=1, model_save_path='model/mancal
             recent_outcomes.append(-1)
         else:
             recent_outcomes.append(0)
+
+        loaded_agent.update_alpha(alpha_decay, min_alpha)
 
         # Checkpoint
         if n_games%games_per_checkpoint == 0:
