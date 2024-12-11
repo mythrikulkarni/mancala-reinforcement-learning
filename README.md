@@ -11,10 +11,10 @@ Andrew Ortega,
 Shriya Rudrashetty,
 Alyssa Ann Toledo
 
+### How to Play:
 
-**How to Play**
-Run train_mancala_agent.py to train the RL algorithm
-Run play_mancala.py to play a game of mancala
+- Run train_mancala_agent.py to train the RL algorithm
+- Run play_mancala.py to play a game of mancala
 
 ### Current Features
 - Ability to play Mancala human vs human
